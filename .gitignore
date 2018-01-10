@@ -1,4 +1,5 @@
 slack.ini
+sla.py
 logfile.log
 build
 dist
